@@ -169,23 +169,31 @@
     </div>
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // Check if Firebase is loaded
+        if (typeof firebase === 'undefined') {
+            console.error("Firebase SDK not loaded");
+            alert("خطأ: لم يتم تحميل مكتبة Firebase. تحقق من اتصال الإنترنت أو روابط CDN.");
+        } else {
+            console.log("Firebase SDK loaded successfully");
+        }
+
         // Firebase Configuration
         const firebaseConfig = {
-  apiKey: "AIzaSyCSCDleshPmyCzhUKfjMWtVCTkE5YKMRUw",
-  authDomain: "car-rent-ff578.firebaseapp.com",
-  databaseURL: "https://car-rent-ff578-default-rtdb.firebaseio.com",
-  projectId: "car-rent-ff578",
-  storageBucket: "car-rent-ff578.firebasestorage.app",
-  messagingSenderId: "722513509833",
-  appId: "1:722513509833:web:092a508f00e54a9386fc18",
-  measurementId: "G-3FWSPQ1RWT"
-};
+            apiKey: "AIzaSyCSCDleshPmyCzhUKfjMWtVCTkE5YKMRUw",
+            authDomain: "car-rent-ff578.firebaseapp.com",
+            databaseURL: "https://car-rent-ff578-default-rtdb.firebaseio.com",
+            projectId: "car-rent-ff578",
+            storageBucket: "car-rent-ff578.firebasestorage.app",
+            messagingSenderId: "722513509833",
+            appId: "1:722513509833:web:092a508f00e54a9386fc18",
+            measurementId: "G-3FWSPQ1RWT"
+        };
 
         // Initialize Firebase
         try {
