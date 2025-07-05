@@ -118,9 +118,11 @@
         <tbody id="tableBody"></tbody>
     </table>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
-    <script>
+    <script type="module">
+        // استيراد مكتبات Firebase
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getDatabase, ref, push, set, onValue } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+
         // إعدادات Firebase - استبدل هذه القيم بإعدادات مشروعك
         const firebaseConfig = {
   apiKey: "AIzaSyCSCDleshPmyCzhUKfjMWtVCTkE5YKMRUw",
@@ -134,58 +136,75 @@
 };
 
         // تهيئة Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        try {
+            const app = initializeApp(firebaseConfig);
+            const database = getDatabase(app);
+            console.log("Firebase تم تهيئته بنجاح");
 
-        // التعامل مع إرسال النموذج
-        document.getElementById('carForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+            // التعامل مع إرسال النموذج
+            document.getElementById('carForm').addEventListener('submit', function(e) {
+                e.preventDefault();
 
-            // جمع البيانات من النموذج
-            const driverName = document.getElementById('driverName').value;
-            const plateNumber = document.getElementById('plateNumber').value;
-            const phoneNumber = document.getElementById('phoneNumber').value;
-            const date = document.getElementById('date').value;
-            const storeName = document.getElementById('storeName').value;
-            const day = document.getElementById('day').value;
-            const amount = document.getElementById('amount').value;
+                try {
+                    // جمع البيانات من النموذج
+                    const driverName = document.getElementById('driverName').value;
+                    const plateNumber = document.getElementById('plateNumber').value;
+                    const phoneNumber = document.getElementById('phoneNumber').value;
+                    const date = document.getElementById('date').value;
+                    const storeName = document.getElementById('storeName').value;
+                    const day = document.getElementById('day').value;
+                    const amount = document.getElementById('amount').value;
 
-            // حفظ البيانات في Firebase
-            const newRecord = database.ref('records').push();
-            newRecord.set({
-                driverName: driverName,
-                plateNumber: plateNumber,
-                phoneNumber: phoneNumber,
-                date: date,
-                storeName: storeName,
-                day: day,
-                amount: amount
+                    // حفظ البيانات في Firebase
+                    const newRecordRef = push(ref(database, 'records'));
+                    set(newRecordRef, {
+                        driverName: driverName,
+                        plateNumber: plateNumber,
+                        phoneNumber: phoneNumber,
+                        date: date,
+                        storeName: storeName,
+                        day: day,
+                        amount: amount
+                    }).then(() => {
+                        alert("تم تسجيل البيانات بنجاح!");
+                        document.getElementById('carForm').reset();
+                    }).catch((error) => {
+                        console.error("خطأ أثناء حفظ البيانات:", error);
+                        alert("حدث خطأ أثناء التسجيل: " + error.message);
+                    });
+                } catch (error) {
+                    console.error("خطأ في إرسال النموذج:", error);
+                    alert("حدث خطأ: " + error.message);
+                }
             });
 
-            // إعادة تعيين النموذج
-            document.getElementById('carForm').reset();
-        });
+            // استرجاع البيانات وعرضها في الجدول
+            onValue(ref(database, 'records'), (snapshot) => {
+                const tableBody = document.getElementById('tableBody');
+                tableBody.innerHTML = ''; // مسح الجدول قبل التحديث
 
-        // استرجاع البيانات وعرضها في الجدول
-        database.ref('records').on('value', function(snapshot) {
-            const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = ''; // مسح الجدول قبل التحديث
-
-            snapshot.forEach(function(childSnapshot) {
-                const data = childSnapshot.val();
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${data.driverName}</td>
-                    <td>${data.plateNumber}</td>
-                    <td>${data.phoneNumber}</td>
-                    <td>${data.date}</td>
-                    <td>${data.storeName}</td>
-                    <td>${data.day}</td>
-                    <td>${data.amount}</td>
-                `;
-                tableBody.appendChild(row);
+                snapshot.forEach((childSnapshot) => {
+                    const data = childSnapshot.val();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${data.driverName}</td>
+                        <td>${data.plateNumber}</td>
+                        <td>${data.phoneNumber}</td>
+                        <td>${data.date}</td>
+                        <td>${data.storeName}</td>
+                        <td>${data.day}</td>
+                        <td>${data.amount}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }, (error) => {
+                console.error("خطأ أثناء استرجاع البيانات:", error);
+                alert("حدث خطأ أثناء تحميل البيانات: " + error.message);
             });
-        });
+        } catch (error) {
+            console.error("خطأ في تهيئة Firebase:", error);
+            alert("خطأ في الاتصال بـ Firebase: " + error.message);
+        }
     </script>
 </body>
 </html>
