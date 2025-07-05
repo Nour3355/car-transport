@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل بيانات نقل السيارات</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: right;
+            background-color: #f4f4f4;
+        }
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+        form {
+            max-width: 600px;
+            margin: 0 auto 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        input, select {
+            padding: 8px;
+            margin-bottom: 10px;
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            max-width: 1000px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: right;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>تسجيل بيانات نقل السيارات</h1>
+    <form id="carForm">
+        <label for="driverName">اسم السائق:</label>
+        <input type="text" id="driverName" required><br><br>
+
+        <label for="plateNumber">نمرة العربية:</label>
+        <input type="text" id="plateNumber" required><br><br>
+
+        <label for="phoneNumber">رقم تليفون السائق:</label>
+        <input type="tel" id="phoneNumber" required><br><br>
+
+        <label for="date">التاريخ:</label>
+        <input type="date" id="date" required><br><br>
+
+        <label for="storeName">اسم المخزن/الشركة:</label>
+        <input type="text" id="storeName" required><br><br>
+
+        <label for="day">اليوم:</label>
+        <select id="day" required>
+            <option value="السبت">السبت</option>
+            <option value="الأحد">الأحد</option>
+            <option value="الإثنين">الإثنين</option>
+            <option value="الثلاثاء">الثلاثاء</option>
+            <option value="الأربعاء">الأربعاء</option>
+            <option value="الخميس">الخميس</option>
+            <option value="الجمعة">الجمعة</option>
+        </select><br><br>
+
+        <label for="amount">المبلغ:</label>
+        <input type="number" id="amount" required><br><br>
+
+        <button type="submit">تسجيل</button>
+    </form>
+
+    <h2>سجل البيانات</h2>
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>اسم السائق</th>
+                <th>نمرة العربية</th>
+                <th>رقم التليفون</th>
+                <th>التاريخ</th>
+                <th>اسم المخزن/الشركة</th>
+                <th>اليوم</th>
+                <th>المبلغ</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+    <script>
+        // إعدادات Firebase - استبدل هذه القيم بإعدادات مشروعك
+        const firebaseConfig = {
+  apiKey: "AIzaSyCSCDleshPmyCzhUKfjMWtVCTkE5YKMRUw",
+  authDomain: "car-rent-ff578.firebaseapp.com",
+  databaseURL: "https://car-rent-ff578-default-rtdb.firebaseio.com",
+  projectId: "car-rent-ff578",
+  storageBucket: "car-rent-ff578.firebasestorage.app",
+  messagingSenderId: "722513509833",
+  appId: "1:722513509833:web:092a508f00e54a9386fc18",
+  measurementId: "G-3FWSPQ1RWT"
+};
+
+        // تهيئة Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // التعامل مع إرسال النموذج
+        document.getElementById('carForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // جمع البيانات من النموذج
+            const driverName = document.getElementById('driverName').value;
+            const plateNumber = document.getElementById('plateNumber').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const date = document.getElementById('date').value;
+            const storeName = document.getElementById('storeName').value;
+            const day = document.getElementById('day').value;
+            const amount = document.getElementById('amount').value;
+
+            // حفظ البيانات في Firebase
+            const newRecord = database.ref('records').push();
+            newRecord.set({
+                driverName: driverName,
+                plateNumber: plateNumber,
+                phoneNumber: phoneNumber,
+                date: date,
+                storeName: storeName,
+                day: day,
+                amount: amount
+            });
+
+            // إعادة تعيين النموذج
+            document.getElementById('carForm').reset();
+        });
+
+        // استرجاع البيانات وعرضها في الجدول
+        database.ref('records').on('value', function(snapshot) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = ''; // مسح الجدول قبل التحديث
+
+            snapshot.forEach(function(childSnapshot) {
+                const data = childSnapshot.val();
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${data.driverName}</td>
+                    <td>${data.plateNumber}</td>
+                    <td>${data.phoneNumber}</td>
+                    <td>${data.date}</td>
+                    <td>${data.storeName}</td>
+                    <td>${data.day}</td>
+                    <td>${data.amount}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        });
+    </script>
+</body>
+</html>
