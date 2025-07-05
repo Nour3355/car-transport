@@ -10,12 +10,12 @@
         body {
             font-family: 'Cairo', sans-serif;
             direction: rtl;
-            background: linear-gradient(135deg, #fafafa 0%, #e9ecef 100%); /* تدرج خفيف */
+            background: linear-gradient(135deg, #fafafa 0%, #e9ecef 100%);
             min-height: 100vh;
             padding: 20px;
         }
         .navbar {
-            background-color: #4361ee; /* أزرق هادئ */
+            background-color: #4361ee;
         }
         .navbar-brand, .nav-link {
             color: white !important;
@@ -44,7 +44,7 @@
             box-shadow: 0 0 5px rgba(67, 97, 238, 0.3);
         }
         .btn-primary {
-            background-color: #00a896; /* أخضر زاهي ناعم */
+            background-color: #00a896;
             border: none;
             border-radius: 8px;
             transition: background-color 0.3s;
@@ -59,7 +59,7 @@
             border: 1px solid #e9ecef;
         }
         th {
-            background-color: #e9ecef; /* رمادي فاتح */
+            background-color: #e9ecef;
             color: #2d3436;
         }
         td, th {
@@ -77,10 +77,10 @@
             display: block;
         }
         h2 {
-            color: #4361ee; /* أزرق هادئ للعناوين */
+            color: #4361ee;
         }
         label {
-            color: #2d3436; /* رمادي داكن للنصوص */
+            color: #2d3436;
             font-weight: 600;
         }
     </style>
@@ -169,8 +169,8 @@
     </div>
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -188,58 +188,84 @@
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log("Firebase initialized successfully");
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+            alert("خطأ في تهيئة Firebase: " + error.message);
+        }
+
         const database = firebase.database();
 
         // Form Submission
         document.getElementById('carForm').addEventListener('submit', (e) => {
             e.preventDefault();
+            console.log("Form submitted");
 
-            const driverName = document.getElementById('driverName').value;
-            const carNumberLetters = document.getElementById('carNumberLetters').value;
-            const carNumberDigits = document.getElementById('carNumberDigits').value;
-            const carNumber = `${carNumberLetters} ${carNumberDigits}`;
-            const phone = document.getElementById('phone').value;
-            const date = document.getElementById('date').value;
-            const company = document.getElementById('company').value;
-            const amount = document.getElementById('amount').value;
+            try {
+                const driverName = document.getElementById('driverName').value;
+                const carNumberLetters = document.getElementById('carNumberLetters').value;
+                const carNumberDigits = document.getElementById('carNumberDigits').value;
+                const carNumber = `${carNumberLetters} ${carNumberDigits}`;
+                const phone = document.getElementById('phone').value;
+                const date = document.getElementById('date').value;
+                const company = document.getElementById('company').value;
+                const amount = document.getElementById('amount').value;
 
-            // Save to Firebase
-            database.ref('car_transfers').push({
-                driverName,
-                carNumber,
-                phone,
-                date,
-                company,
-                amount
-            }).then(() => {
-                alert('تم تسجيل البيانات بنجاح!');
-                document.getElementById('carForm').reset();
-                showPage('dataPage'); // Switch to data page after submission
-            }).catch((error) => {
+                console.log("Data collected:", { driverName, carNumber, phone, date, company, amount });
+
+                // Save to Firebase
+                database.ref('car_transfers').push({
+                    driverName,
+                    carNumber,
+                    phone,
+                    date,
+                    company,
+                    amount
+                }).then(() => {
+                    console.log("Data saved successfully");
+                    alert('تم تسجيل البيانات بنجاح!');
+                    document.getElementById('carForm').reset();
+                    showPage('dataPage'); // Switch to data page
+                }).catch((error) => {
+                    console.error("Error saving data:", error);
+                    alert('حدث خطأ أثناء التسجيل: ' + error.message);
+                });
+            } catch (error) {
+                console.error("Form submission error:", error);
                 alert('حدث خطأ: ' + error.message);
-            });
+            }
         });
 
         // Display Data
-        database.ref('car_transfers').on('value', (snapshot) => {
-            const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = '';
+        try {
+            database.ref('car_transfers').on('value', (snapshot) => {
+                console.log("Data retrieved from Firebase");
+                const tableBody = document.getElementById('tableBody');
+                tableBody.innerHTML = '';
 
-            snapshot.forEach((childSnapshot) => {
-                const data = childSnapshot.val();
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${data.driverName}</td>
-                    <td>${data.carNumber}</td>
-                    <td>${data.phone}</td>
-                    <td>${data.date}</td>
-                    <td>${data.company}</td>
-                    <td>${data.amount}</td>
-                `;
-                tableBody.appendChild(row);
+                snapshot.forEach((childSnapshot) => {
+                    const data = childSnapshot.val();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${data.driverName}</td>
+                        <td>${data.carNumber}</td>
+                        <td>${data.phone}</td>
+                        <td>${data.date}</td>
+                        <td>${data.company}</td>
+                        <td>${data.amount}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }, (error) => {
+                console.error("Error retrieving data:", error);
+                alert('حدث خطأ أثناء استرجاع البيانات: ' + error.message);
             });
-        });
+        } catch (error) {
+            console.error("Data retrieval setup error:", error);
+            alert('حدث خطأ في إعداد استرجاع البيانات: ' + error.message);
+        }
 
         // Page Navigation
         function showPage(pageId) {
